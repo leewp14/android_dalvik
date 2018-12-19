@@ -59,6 +59,7 @@ static const char* kPathWhitelist[] = {
   "/system/etc/event-log-tags",
   "/sys/kernel/debug/tracing/trace_marker",
   "/system/framework/framework-res.apk",
+  "/data/data/de.robv.android.xposed.installer/bin/XposedBridge.jar", /* Old path for XposedBridge (used in KK and below) */
   "@netlink@" /* path for netlink (AF_NETLINK) sockets */
 };
 
@@ -265,12 +266,13 @@ class FileDescriptorInfo {
       return true;
     }
 
-    if (access("/system/framework/XposedBridge.jar", F_OK ) != -1) {
+    if (access("/data/data/de.robv.android.xposed.installer/bin/XposedBridge.jar", F_OK ) != -1) {
       // Xposed-powered Zygote might read from extensions other than .apk
       // so skip extension check
       ALOGW("Xposed detected, loosening up Zygote fd check!");
       static const std::string kDataAppPrefix = "/data/app/";
-      if (path.compare(0, kDataAppPrefix.size(), kDataAppPrefix) == 0) {
+      static const std::string kDataDataPrefix = "/data/data/";
+      if (path.compare(0, kDataAppPrefix.size(), kDataAppPrefix) == 0 || path.compare(0, kDataDataPrefix.size(), kDataDataPrefix) == 0) {
         return true;
       }
     }
